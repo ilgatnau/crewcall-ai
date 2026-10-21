@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Named Agents</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><main><header><p class="eyebrow">YOUR LOCAL AGENT DESK</p><h1>Named Agents<span>●</span></h1><p>Address an agent. Keep the work moving.</p></header>
+<p id="mode"></p><section class="composer"><label for="instruction">Instruction</label><textarea id="instruction" rows="3" placeholder="Agent Thomas, investigate the failing tests."></textarea><div class="actions"><button id="voice" type="button">Dictate</button><button id="send" type="button">Send instruction ↗</button></div><p class="hint">Dictation fills the editor. Review it, then send. Browser speech services may process audio remotely.</p></section>
+<p id="message" role="status" aria-live="polite"></p><section id="agents" aria-label="Agents"></section><footer>Sessions keep running when you close this dashboard. Confirm readiness only when the agent is waiting for a new prompt.</footer></main></body></html>

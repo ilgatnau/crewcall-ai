@@ -1,0 +1,6 @@
+{
+  "agents": [
+    { "name": "Thomas", "aliases": ["Tom"], "session": "agent-thomas", "cwd": "~/projects/backend", "command": ["claude"], "pane": null },
+    { "name": "John", "aliases": [], "session": "agent-john", "cwd": "~/projects/frontend", "command": ["codex"], "pane": null }
+  ]
+}
