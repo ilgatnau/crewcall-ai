@@ -1,10 +1,11 @@
 # Named Agents
 
-A dependency-free Node.js prototype for routing spoken or typed instructions to named coding agents in macOS tmux sessions. Includes a local browser dashboard and CLI. Requires Node.js 22+.
+A Node.js prototype for routing spoken or typed instructions to named coding agents in macOS tmux sessions. Includes a local browser dashboard and CLI. Requires Node.js 22+.
 
 ## Try without tmux
 
 ```sh
+npm install
 npm test
 npm run demo
 ```
@@ -21,7 +22,7 @@ cp config.example.json config.local.json
 npm start
 ```
 
-No npm dependencies or compilation step are needed. Agent commands are executable/argument arrays, not arbitrary shell snippets. `~` is supported at the start of project paths. Each profile must use a distinct tmux session. Do not commit local configuration or credentials.
+Run `npm install` before starting. No compilation step is needed. Agent commands are executable/argument arrays, not arbitrary shell snippets. `~` is supported at the start of project paths. Each profile must use a distinct tmux session. Do not commit local configuration or credentials.
 
 1. Open http://127.0.0.1:3210.
 2. Send `Agent Thomas, investigate the failing tests`.
@@ -80,3 +81,25 @@ Next steps are coding-agent-specific readiness/completion adapters, durable queu
 ## Validation
 
 `npm test` covers routing, duplicate startup prevention, existing-session adoption, ambiguous panes, failed delivery, stopped agents, and invalid input. The implementation was checked in a Linux workspace without tmux. Real macOS tmux sessions, browser microphone behavior, and individual coding-agent CLIs still require integration testing on your Mac.
+
+## Agent responses and speech
+
+The server adds a CrewCall response contract to every delivered instruction, including the absolute Node/CLI reporting command. The agent must support executing shell commands and follow this contract; arbitrary terminal output is not scraped. Existing sessions receive the contract with their next instruction.
+
+To report a response manually, pipe JSON to the CLI while the server is running:
+
+```sh
+printf '%s' '{"text":"Full explanation and test results.","voice":"The task is complete. All tests pass."}' | npm run agent -- respond Thomas
+```
+
+Use `text` alone for progress. Each report replaces the displayed text; `"append":true` appends a chunk (up to 16000 characters total). To finish, send the complete written response with a separate `voice` summary: one or two sentences, at most 35 words and 300 characters. Reporting does not confirm readiness or advance the instruction queue. Responses are held in memory; only the latest report per agent is retained. Text updates appear with the dashboard's 2.5-second polling interval rather than token-by-token streaming.
+
+Enable **Speak new agent summaries** for automatic playback, or click **Play voice** on a response. Speech is queued across agents, and **Stop voice** cancels playback and queued speech. Browser autoplay rules may require clicking Play voice. In demo mode, **Simulate response** exercises reporting and speech without a real agent.
+
+Speech uses the Node.js library `@sefinek/google-tts-api` and Google's online translation speech service, without an API key. Only the voice summary is sent for synthesis. Internet access is required; provider availability and limits apply. Audio is generated on request and played in the browser, so the WSL host needs no audio device. Provider failures leave the written response available and can be retried with Play voice.
+
+## Voice command: show all agent sessions
+
+Click **Dictate** and say **“show all agent sessions”**. The dashboard immediately displays every configured agent, its tmux session, actual pane availability, pane IDs and processes, and an attach command for existing sessions. **“List agent sessions”**, **“display all agent sessions”**, and **“show all agents”** also work. The same commands can be typed and sent, or use the **Show all agent sessions** button.
+
+This command only inspects sessions; it does not launch agents, send prompts, or confirm readiness. Missing sessions are included. Multi-pane and missing bound-pane cases are identified. Unconfigured tmux sessions are excluded. Use **Refresh sessions** to inspect again. In demo mode, session information is simulated. Agent-addressed instructions still require review and sending as usual.

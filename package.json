@@ -1,6 +1,19 @@
 {
-  "name": "named-agents", "version": "0.1.0", "private": true,
-  "type": "module", "description": "Local voice routing for named tmux coding agents",
-  "engines": { "node": ">=22" },
-  "scripts": { "start": "node src/server.js", "demo": "node src/server.js --demo", "test": "node --test", "agent": "node src/cli.js" }
+  "name": "named-agents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local voice routing for named tmux coding agents",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "demo": "node src/server.js --demo",
+    "test": "node --test",
+    "agent": "node src/cli.js"
+  },
+  "dependencies": {
+    "@sefinek/google-tts-api": "^2.1.15"
+  }
 }

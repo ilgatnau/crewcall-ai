@@ -41,3 +41,14 @@ test('rejects duplicate aliases and terminal control characters', async () => {
   const c = config(); c.agents[0].aliases = ['Thomas']; assert.throws(() => validateConfig(c), /Duplicate/);
   const {app} = setup(); await assert.rejects(app.submit('Thomas, hello\nexit'), /single-line/);
 });
+
+test('formats the delivered prompt while preserving the original instruction in state', async () => {
+  const backend = new DemoTmux();
+  const sent = [];
+  backend.send = async (pane, text) => sent.push(text);
+  const app = new Supervisor(config(), backend, (text, name) => name + ': protocol; ' + text);
+  await app.submit('Thomas, run tests');
+  await app.ready('Thomas');
+  assert.deepEqual(sent, ['Thomas: protocol; run tests']);
+  assert.equal(app.snapshot()[0].last, 'run tests');
+});

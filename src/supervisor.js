@@ -19,7 +19,8 @@ export function validateConfig(config) {
   return config;
 }
 export class Supervisor {
-  constructor(config, tmux) {
+  constructor(config, tmux, formatInstruction = instruction => instruction) {
+    this.formatInstruction = formatInstruction;
     this.profiles = validateConfig(config).agents;
     this.tmux = tmux;
     this.states = new Map(this.profiles.map(p => [p.name, { status: 'unverified', pane: null, queue: [], last: '', error: null }]));
@@ -62,12 +63,12 @@ export class Supervisor {
     state.pane = pane.id;
     return state;
   }
-  async drain(state) {
+  async drain(state, name) {
     if (state.status !== 'ready' || !state.queue.length) return;
     const instruction = state.queue[0];
     // If submission partially fails, require human inspection before retrying.
     state.status = 'busy';
-    try { await this.tmux.send(state.pane, instruction); state.queue.shift(); state.last = instruction; }
+    try { await this.tmux.send(state.pane, this.formatInstruction(instruction, name)); state.queue.shift(); state.last = instruction; }
     catch (error) { state.status = 'delivery-uncertain'; throw error; }
   }
   async submit(text) {
@@ -77,7 +78,7 @@ export class Supervisor {
       const state = this.states.get(name);
       if (state.queue.length >= 100) throw new Error('Agent queue is full.');
       state.queue.push(instruction);
-      try { await this.inspect(this.profile(name), true); await this.drain(state); state.error = null; }
+      try { await this.inspect(this.profile(name), true); await this.drain(state, name); state.error = null; }
       catch (error) { state.error = error.message; throw error; }
       return this.snapshot();
     });
@@ -89,7 +90,7 @@ export class Supervisor {
       if (!state.pane) throw new Error('No session exists. Send an instruction first.');
       if (state.status === 'delivery-uncertain') throw new Error('Delivery was uncertain. Clear the queue and inspect the terminal before confirming readiness.');
       state.status = 'ready'; state.error = null;
-      await this.drain(state);
+      await this.drain(state, profile.name);
       return this.snapshot();
     });
   }
